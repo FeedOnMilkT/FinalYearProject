@@ -1,0 +1,5 @@
+source /workspace/SometingElse/Conda/miniconda3/bin/activate
+
+git config --global user.email "feedonmilkytea@gmail.com
+
+git config --global user.name "FeedonMilkT"
