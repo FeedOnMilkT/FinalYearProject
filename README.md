@@ -1,6 +1,18 @@
 <img src="docs/open_mmlab.png" align="right" width="30%">
 
-# OpenPCDet
+# Final Year Project Based on OpenPCDet: Enhanced 3D Object Detection Framework
+
+## Introduction:
+
+This research project extends OpenPCDet to advance the state-of-the-art in 3D object detection. Our work focuses on enhancing detection performance through architectural innovations while maintaining real-world applicability.
+
+The primary objectives include optimizing existing 3D backbone networks and exploring novel architectures to improve detection accuracy and efficiency. We are investigating potential improvements to the core detection pipeline through sophisticated backbone network modifications and innovative feature extraction approaches.
+
+For enhanced real-world performance, we are exploring multi-modal fusion techniques to leverage complementary sensor data, potentially improving detection accuracy in challenging scenarios. Additionally, we are developing optimization strategies specifically targeted at edge computing platforms like NVIDIA Jetson devices, ensuring robust real-time performance even with limited computational resources.
+
+This project aims to bridge the gap between state-of-the-art detection performance and practical deployment requirements, making advanced 3D object detection more accessible for real-world applications.
+
+Built upon OpenPCDet
 
 `OpenPCDet` is a clear, simple, self-contained open source project for LiDAR-based 3D object detection. 
 
