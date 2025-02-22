@@ -4,7 +4,6 @@ from pathlib import Path
 
 try:
     import open3d
-    open3d.visualization.webrtc_server.enable_webrtc()
     from visual_utils import open3d_vis_utils as V
     OPEN3D_FLAG = True
 except:
@@ -20,6 +19,7 @@ from pcdet.datasets import DatasetTemplate
 from pcdet.models import build_network, load_data_to_gpu
 from pcdet.utils import common_utils
 
+open3d.visualization.webrtc_server.enable_webrtc()
 
 class DemoDataset(DatasetTemplate):
     def __init__(self, dataset_cfg, class_names, training=True, root_path=None, logger=None, ext='.bin'):
@@ -77,6 +77,31 @@ def parse_config():
 
     return args, cfg
 
+def visualize_with_webrtc(points, pred_boxes=None, pred_scores=None, pred_labels=None):
+    # 创建点云对象
+    pcd = open3d.geometry.PointCloud()
+    pcd.points = open3d.utility.Vector3dVector(points[:, :3])
+    
+    geometries = [pcd]  # 创建几何体列表
+
+    if pred_boxes is not None:
+        for box in pred_boxes:
+            # 从预测框参数创建边界框
+            center = box[:3]  # 中心点坐标
+            size = box[3:6]   # 边界框尺寸
+            rotation = box[6]  # 旋转角度
+
+            # 创建oriented bounding box
+            bbox = open3d.geometry.OrientedBoundingBox(
+                center=center,
+                R=open3d.geometry.get_rotation_matrix_from_xyz([0, 0, rotation]),
+                extent=size
+            )
+            bbox.color = (1, 0, 0)  # 设置为红色
+            geometries.append(bbox)
+
+    # 使用 draw 函数替代 Visualizer
+    open3d.visualization.draw(geometries)
 
 def main():
     args, cfg = parse_config()
@@ -99,11 +124,15 @@ def main():
             load_data_to_gpu(data_dict)
             pred_dicts, _ = model.forward(data_dict)
 
-            V.draw_scenes(
-            # V.draw_scenes_with_webrtc(
-                points=data_dict['points'][:, 1:], ref_boxes=pred_dicts[0]['pred_boxes'],
-                ref_scores=pred_dicts[0]['pred_scores'], ref_labels=pred_dicts[0]['pred_labels']
-            )
+            #V.draw_scenes(
+            #    points=data_dict['points'][:, 1:], ref_boxes=pred_dicts[0]['pred_boxes'],
+            #    ref_scores=pred_dicts[0]['pred_scores'], ref_labels=pred_dicts[0]['pred_labels']
+            #)
+
+            points = data_dict['points'][:, 1:].cpu().numpy()
+            pred_boxes = pred_dicts[0]['pred_boxes'].cpu().numpy() if 'pred_boxes' in pred_dicts[0] else None
+
+            visualize_with_webrtc(points, pred_boxes=pred_boxes)
 
             if not OPEN3D_FLAG:
                 mlab.show(stop=True)
