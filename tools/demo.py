@@ -4,7 +4,7 @@ from pathlib import Path
 
 try:
     import open3d
-    open3d.visualization.webrtc_server.enable_webrtc()
+    # open3d.visualization.webrtc_server.enable_webrtc()
     from visual_utils import open3d_vis_utils as V
     OPEN3D_FLAG = True
 except:
@@ -100,7 +100,6 @@ def main():
             pred_dicts, _ = model.forward(data_dict)
 
             V.draw_scenes(
-            # V.draw_scenes_with_webrtc(
                 points=data_dict['points'][:, 1:], ref_boxes=pred_dicts[0]['pred_boxes'],
                 ref_scores=pred_dicts[0]['pred_scores'], ref_labels=pred_dicts[0]['pred_labels']
             )

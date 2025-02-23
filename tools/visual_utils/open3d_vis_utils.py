@@ -9,13 +9,25 @@ import torch
 import matplotlib
 import numpy as np
 
-box_colormap = [
-    [1, 1, 1],
-    [0, 1, 0],
-    [0, 1, 1],
-    [1, 1, 0],
-]
+# box_colormap = [
+#    [1, 1, 1],
+#    [0, 1, 0],
+#    [0, 1, 1],
+#    [1, 1, 0],
+#]
 
+box_colormap = [
+    [1, 0, 0],    # 红色 - car
+    [0, 1, 0],    # 绿色 - truck
+    [0, 0, 1],    # 蓝色 - construction_vehicle
+    [1, 1, 0],    # 黄色 - bus
+    [1, 0, 1],    # 紫色 - trailer
+    [0, 1, 1],    # 青色 - barrier
+    [0.5, 0.5, 0.5],  # 灰色 - motorcycle
+    [1, 0.5, 0],  # 橙色 - bicycle
+    [0.5, 0, 1],  # 紫罗兰 - pedestrian
+    [0.7, 0.7, 0]  # 暗黄色 - traffic_cone
+]
 
 def get_coor_colors(obj_labels):
     """
@@ -38,7 +50,7 @@ def get_coor_colors(obj_labels):
 
 def draw_scenes(points, gt_boxes=None, ref_boxes=None, ref_labels=None, ref_scores=None, point_colors=None, draw_origin=True):
 
-    open3d.visualization.gui.Application.instance.initialize()    
+    #open3d.visualization.gui.Application.instance.initialize()    
 
     if isinstance(points, torch.Tensor):
         points = points.cpu().numpy()
@@ -49,25 +61,11 @@ def draw_scenes(points, gt_boxes=None, ref_boxes=None, ref_labels=None, ref_scor
 
     vis = open3d.visualization.Visualizer()
     render_option = vis.get_render_option()
-    # vis.create_window()
-    # vis.get_render_option().point_size = 1.0
-    # vis.get_render_option().background_color = np.zeros(3)
+    vis.create_window()
+    vis.get_render_option().point_size = 1.0
+    vis.get_render_option().background_color = np.zeros(3)
 
-    try:
-        vis.create_window(visible=True)
-        render_option.point_size = 1.0
-        render_option.background_color = np.zeros(3)
-    except Exception as e:
-        print(f"Warning: Failed to create visible window, falling back to offscreen rendering: {e}")
-        # 设置环境变量以使用软件渲染
-        import os
-        os.environ["MESA_GL_VERSION_OVERRIDE"] = "4.1"
-        os.environ["LIBGL_ALWAYS_SOFTWARE"] = "1"
-        
-        # 重新尝试创建窗口
-        vis.create_window(visible=True, width=1920, height=1080)
-        render_option.point_size = 1.0
-        render_option.background_color = np.zeros(3)
+
 
     # draw origin
     if draw_origin:
@@ -87,6 +85,7 @@ def draw_scenes(points, gt_boxes=None, ref_boxes=None, ref_labels=None, ref_scor
         vis = draw_box(vis, gt_boxes, (0, 0, 1))
 
     if ref_boxes is not None:
+        # print(ref_labels)
         vis = draw_box(vis, ref_boxes, (0, 1, 0), ref_labels, ref_scores)
 
     vis.run()
@@ -172,7 +171,11 @@ def draw_box(vis, gt_boxes, color=(0, 1, 0), ref_labels=None, score=None):
         if ref_labels is None:
             line_set.paint_uniform_color(color)
         else:
-            line_set.paint_uniform_color(box_colormap[ref_labels[i]])
+            # print("Index", i, "Label", ref_labels[i])
+            if ref_labels[i] >= len(box_colormap):
+                print(f"Warning: Label {ref_labels[i]} exceeds color map range. Using default color.")
+                # line_set.paint_uniform_color(color)
+            line_set.paint_uniform_color(box_colormap[ref_labels[i] - 1])
 
         vis.add_geometry(line_set)
 
