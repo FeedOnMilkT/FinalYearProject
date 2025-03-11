@@ -3,6 +3,7 @@ from functools import partial
 import torch.nn as nn
 
 from ...utils.spconv_utils import replace_feature, spconv
+from ..model_utils.attention_utils import SE2D, SESparse2D
 
 
 def post_act_block(in_channels, out_channels, kernel_size, indice_key=None, stride=1, padding=0,
@@ -297,4 +298,72 @@ class PillarRes18BackBone8x(nn.Module):
             }
         })
         
+        return batch_dict
+
+
+class SEPillarRes18BackBone8x(PillarRes18BackBone8x):
+    # SE-ResNet18 backbone for 2D object detection
+    def __init__(self, model_cfg, input_channels, grid_size, **kwargs):
+        super().__init__(model_cfg, input_channels, grid_size, **kwargs)
+
+        self.use_se_attention = model_cfg.get('USE_SE_ATTENTION', True)
+        self.se_reduction = model_cfg.get('SE_REDUCTION', 16)
+        
+        if self.use_se_attention:
+            self.sparse_se_modules = nn.ModuleDict({
+                # 'se1': SESparse2D(32, self.se_reduction),
+                'se_conv2': SESparse2D(64, self.se_reduction),
+                'se_conv3': SESparse2D(128, self.se_reduction),
+                'se_conv4': SESparse2D(256, self.se_reduction),
+            })
+
+            self.dense_se_modules = SE2D(channels = 256, reduction = self.se_reduction)
+
+    def forward(self, batch_dict):
+        pillar_features, pillar_coords = batch_dict['pillar_features'], batch_dict['pillar_coords']
+        batch_size = batch_dict['batch_size']
+        input_sp_tensor = spconv.SparseConvTensor(
+            features=pillar_features,
+            indices=pillar_coords.int(),
+            spatial_shape=self.sparse_shape,
+            batch_size=batch_size
+        )
+
+        x_conv1 = self.conv1(input_sp_tensor)
+
+        x_conv2 = self.conv2(x_conv1)
+        if self.use_se_attention:
+            x_conv2 = self.sparse_se_modules['se_conv2'](x_conv2)
+        x_conv3 = self.conv3(x_conv2)
+        if self.use_se_attention:
+            x_conv3 = self.sparse_se_modules['se_conv3'](x_conv3)
+        x_conv4 = self.conv4(x_conv3)
+        if self.use_se_attention:
+            x_conv4 = self.sparse_se_modules['se_conv4'](x_conv4)
+
+        x_conv4 = x_conv4.dense()
+        x_conv5 = self.conv5(x_conv4)
+        if self.use_se_attention:
+            x_conv5 = self.dense_se_modules(x_conv5)
+
+        batch_dict.update({
+            'multi_scale_2d_features': {
+                'x_conv1': x_conv1,
+                'x_conv2': x_conv2,
+                'x_conv3': x_conv3,
+                'x_conv4': x_conv4,
+                'x_conv5': x_conv5,
+            }
+        })
+
+        batch_dict.update({
+            'multi_scale_2d_strides': {
+                'x_conv1': 1,
+                'x_conv2': 2,
+                'x_conv3': 4,
+                'x_conv4': 8,
+                'x_conv5': 16,
+            }
+        })
+
         return batch_dict

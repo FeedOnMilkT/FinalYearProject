@@ -9,6 +9,7 @@ except Exception as e:
     pass
 
 from .vfe_template import VFETemplate
+from ...model_utils.attention_utils import SEAttention
 
 
 class PFNLayerV2(nn.Module):
@@ -237,4 +238,66 @@ class DynamicPillarVFESimple2D(VFETemplate):
 
         batch_dict['pillar_features'] = features
         batch_dict['pillar_coords'] = pillar_coords
+        return batch_dict
+
+class SEDynamicPillarVFE(DynamicPillarVFE):
+    def __init__(self, model_cfg, num_point_features, voxel_size, grid_size, point_cloud_range, **kwargs):
+        super().__init__(model_cfg, num_point_features, voxel_size, grid_size, point_cloud_range, **kwargs)
+
+        self.use_se_attention = self.model_cfg.get('USE_ATTENTION', True)
+        self.se_reduction = self.model_cfg.get('SE_REDUCTION', 16)
+
+        if self.use_se_attention:
+            self.se_module = SEAttention(self.num_filters[-1], self.se_reduction)
+
+    def forward(self, batch_dict, **kwargs):
+        points = batch_dict['points']  # (batch_idx, x, y, z, i, e)
+        points_coords = torch.floor(
+            (points[:, [1, 2]] - self.point_cloud_range[[0, 1]]) / self.voxel_size[[0, 1]]).int()
+        mask = ((points_coords >= 0) & (points_coords < self.grid_size[[0, 1]])).all(dim=1)
+        points = points[mask]
+        points_coords = points_coords[mask]
+        points_xyz = points[:, [1, 2, 3]].contiguous()
+
+        merge_coords = points[:, 0].int() * self.scale_xy + \
+                          points_coords[:, 0] * self.scale_y + \
+                          points_coords[:, 1]
+        
+        unq_coords, unq_inv, unq_cnt = torch.unique(merge_coords, return_inverse=True, return_counts=True, dim=0)
+
+        points_mean = torch_scatter.scatter_mean(points_xyz, unq_inv, dim=0)
+        f_cluster = points_xyz - points_mean[unq_inv, :]
+
+        f_center = torch.zeros_like(points_xyz)
+        f_center[:, 0] = points_xyz[:, 0] - (points_coords[:, 0].to(points_xyz.dtype) * self.voxel_x + self.x_offset)
+        f_center[:, 1] = points_xyz[:, 1] - (points_coords[:, 1].to(points_xyz.dtype) * self.voxel_y + self.y_offset)
+        f_center[:, 2] = points_xyz[:, 2] - self.z_offset
+
+        if self.use_absolute_xyz:
+            features = [points[:, 1:], f_cluster, f_center]
+        else:
+            features = [points[:, 4:], f_cluster, f_center]
+
+        if self.with_distance:
+            points_dist = torch.norm(points[:, 1:4], 2, dim=1, keepdim=True)
+            features.append(points_dist)
+        features = torch.cat(features, dim=-1)
+
+        for pfn in self.pfn_layers:
+            features = pfn(features, unq_inv)
+
+        if self.use_se_attention:
+            features = self.se_module(features)
+
+        # generate voxel coordinates
+        unq_coords = unq_coords.int()
+        voxel_coords = torch.stack((unq_coords // self.scale_xy,
+                                    (unq_coords % self.scale_xy) // self.scale_y,
+                                    unq_coords % self.scale_y,
+                                    torch.zeros(unq_coords.shape[0]).to(unq_coords.device).int()
+                                    ), dim=1)
+        voxel_coords = voxel_coords[:, [0, 3, 2, 1]]
+
+        batch_dict['voxel_features'] = batch_dict['pillar_features'] = features
+        batch_dict['voxel_coords'] = voxel_coords
         return batch_dict
