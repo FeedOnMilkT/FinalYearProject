@@ -3,6 +3,7 @@ from functools import partial
 import torch.nn as nn
 
 from ...utils.spconv_utils import replace_feature, spconv
+from ..model_utils.attention_utils import SESparse3D
 
 
 def post_act_block(in_channels, out_channels, kernel_size, indice_key=None, stride=1, padding=0,
@@ -293,3 +294,79 @@ class VoxelResBackBone8x(nn.Module):
         })
         
         return batch_dict
+
+
+
+class SEVoxelResBackBone8x(VoxelResBackBone8x):
+    # SEVoxelResBackBone8x is a class for the 3D sparse convolutional neural network with SEAttention blocks
+
+    def __init__(self, model_cfg, input_channels, grid_size, **kwargs):
+        super().__init__(model_cfg, input_channels, grid_size, **kwargs)
+
+        self.use_se_attention = model_cfg.get('USE_SE_ATTENTION', True)
+        self.se_reduction = model_cfg.get('SE_REDUCTION', 16)
+
+        if self.use_se_attention:
+            self.se_module = nn.ModuleDict({
+                # 'se_conv1': SESparse3D(channels=16, reduction=self.se_reduction),
+                'se_conv2': SESparse3D(channels=32, reduction=self.se_reduction),
+                'se_conv3': SESparse3D(channels=64, reduction=self.se_reduction),
+                'se_conv4': SESparse3D(channels=128, reduction=self.se_reduction),
+                # 'se_conv_out': SESparse3D(channels=128, reduction=self.se_reduction)
+            })                
+
+    def forward(self, batch_dict):
+        voxel_features, voxel_coords = batch_dict['voxel_features'], batch_dict['voxel_coords']
+        batch_size = batch_dict['batch_size']
+
+        input_sp_tensor = spconv.SparseConvTensor(
+            features=voxel_features,
+            indices=voxel_coords.int(),
+            spatial_shape=self.sparse_shape,
+            batch_size=batch_size
+        )
+
+        x = self.conv_input(input_sp_tensor)
+
+        x_conv1 = self.conv1(x)
+
+        x_conv2 = self.conv2(x_conv1)
+        if self.use_se_attention:
+            x_conv2 = self.se_module['se_conv2'](x_conv2)
+
+        x_conv3 = self.conv3(x_conv2)
+        if self.use_se_attention:
+            x_conv3 = self.se_module['se_conv3'](x_conv3)
+
+        x_conv4 = self.conv4(x_conv3)
+        if self.use_se_attention:
+            x_conv4 = self.se_module['se_conv4'](x_conv4)
+
+        out = self.conv_out(x_conv4)
+
+
+        batch_dict.update({
+            'encoded_spconv_tensor': out,
+            'encoded_spconv_tensor_stride': 8
+        })
+
+        batch_dict.update({
+            'multi_scale_3d_features': {
+                'x_conv1': x_conv1,
+                'x_conv2': x_conv2,
+                'x_conv3': x_conv3,
+                'x_conv4': x_conv4,
+            }
+        })
+
+        batch_dict.update({
+            'multi_scale_3d_strides': {
+                'x_conv1': 1,
+                'x_conv2': 2,
+                'x_conv3': 4,
+                'x_conv4': 8,
+            }
+        })
+
+        return batch_dict
+
