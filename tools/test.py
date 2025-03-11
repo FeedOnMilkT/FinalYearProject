@@ -41,6 +41,9 @@ def parse_config():
     parser.add_argument('--save_to_file', action='store_true', default=False, help='')
     parser.add_argument('--infer_time', action='store_true', default=False, help='calculate inference latency')
 
+    parser.add_argument('--detailed_perf', action='store_true', default=False, help='show detailed performance metrics')
+    parser.add_argument('--warmup_frames', type=int, default=10, help='number of frames to warm up before measuring performance')
+
     args = parser.parse_args()
 
     cfg_from_yaml_file(args.cfg_file, cfg)
