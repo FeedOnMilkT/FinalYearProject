@@ -24,7 +24,7 @@ DATA_CONFIG:
         DISABLE_AUG_LIST: ['placeholder']
         AUG_CONFIG_LIST:
             - NAME: gt_sampling
-              USE_ROAD_PLANE: True
+              USE_ROAD_PLANE: False
               DB_INFO_PATH:
                   - kitti_dbinfos_train.pkl
               PREPARE: {
@@ -85,22 +85,22 @@ MODEL:
         USE_BIAS_BEFORE_NORM: True
         NUM_HM_CONV: 2
         SEPARATE_HEAD_CFG:
-            HEAD_ORDER: ['center', 'center_z', 'dim', 'rot', 'vel']
+            HEAD_ORDER: ['center', 'center_z', 'dim', 'rot']
             HEAD_DICT: {
                 'center': {'out_channels': 2, 'num_conv': 2},
                 'center_z': {'out_channels': 1, 'num_conv': 2},
                 'dim': {'out_channels': 3, 'num_conv': 2},
-                'rot': {'out_channels': 2, 'num_conv': 2},
-                'vel': {'out_channels': 2, 'num_conv': 2},
+                'rot': {'out_channels': 2, 'num_conv': 2}
             }
 
         TARGET_ASSIGNER_CONFIG:
-            MAX_OBJS: 100
+            NUM_MAX_OBJS: 100
             VOXEL_SIZE: [0.05, 0.05, 0.1]
             OUT_SIZE_FACTOR: 4 
             GAUSSIAN_OVERLAP: 0.1
             MIN_RADIUS: 2
             BOX_CODER: ResidualCoder
+            FEATURE_MAP_STRIDE: 4
 
         LOSS_CONFIG:
             LOSS_WEIGHTS: {
@@ -127,8 +127,8 @@ MODEL:
 
 
 OPTIMIZATION:
-    BATCH_SIZE_PER_GPU: 3
-    NUM_EPOCHS: 80
+    BATCH_SIZE_PER_GPU: 10
+    NUM_EPOCHS: 50
 
     OPTIMIZER: adam_onecycle
     LR: 0.003
