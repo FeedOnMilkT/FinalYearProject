@@ -17,8 +17,8 @@ def setup_openpcdet():
     print("=== Install Spconv for CUDA 12 ===")
     run_command("pip install spconv-cu120")
     
-    print("=== Insatll nuScenes devkit ===")
-    run_command("pip install nuscenes-devkit")
+    # print("=== Insatll nuScenes devkit ===")
+    # run_command("pip install nuscenes-devkit")
     
     print("=== Install torch-scatter ===")
     run_command("pip install torch-scatter -f https://data.pyg.org/whl/torch-2.1.1+cu121.html")

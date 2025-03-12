@@ -9,14 +9,14 @@ import torch
 import matplotlib
 import numpy as np
 
-# box_colormap = [
-#    [1, 1, 1],
-#    [0, 1, 0],
-#    [0, 1, 1],
-#    [1, 1, 0],
-#]
-
 box_colormap = [
+    [1, 1, 1],
+    [0, 1, 0],
+    [0, 1, 1],
+    [1, 1, 0],
+]
+
+box_colormapNu = [
     [1, 0, 0],    # 红色 - car
     [0, 1, 0],    # 绿色 - truck
     [0, 0, 1],    # 蓝色 - construction_vehicle
