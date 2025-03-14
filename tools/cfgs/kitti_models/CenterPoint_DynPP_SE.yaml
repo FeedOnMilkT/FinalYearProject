@@ -57,7 +57,7 @@ MODEL:
 
     MAP_TO_BEV:
         NAME: PointPillarScatter
-        NUM_BEV_FEATURES: [64, 128] 
+        NUM_BEV_FEATURES: 64 
 
     BACKBONE_2D:
         NAME: BaseBEVBackbone
@@ -104,21 +104,22 @@ MODEL:
                 'cls_weight': 1.0,
                 'loc_weight': 1.5,
                 'code_weights': [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
-            }  
+            }
+
+        POST_PROCESSING:
+            SCORE_THRESH: 0.1
+            POST_CENTER_LIMIT_RANGE: [0, -39.68, -3, 69.12, 39.68, 1]
+            MAX_OBJ_PER_SAMPLE: 500
+            EVAL_METRIC: kitti
+            NMS_CONFIG:
+                NMS_TYPE: nms_gpu
+                NMS_THRESH: 0.2
+                NMS_PRE_MAXSIZE: 1000
+                NMS_POST_MAXSIZE: 83            
 
     POST_PROCESSING:
         RECALL_THRESH_LIST: [0.3, 0.5, 0.7]
-        SCORE_THRESH: 0.1
-        OUTPUT_RAW_SCORE: False
-
         EVAL_METRIC: kitti
-
-        NMS_CONFIG:
-            MULTI_CLASSES_NMS: False
-            NMS_TYPE: nms_gpu
-            NMS_THRESH: 0.01
-            NMS_PRE_MAXSIZE: 4096
-            NMS_POST_MAXSIZE: 500
 
 
 OPTIMIZATION:
