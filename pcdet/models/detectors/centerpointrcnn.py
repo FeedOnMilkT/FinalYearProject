@@ -1,4 +1,5 @@
 from .detector3d_template import Detector3DTemplate
+from ..backbones_3d.pfe.voxel_set_abstraction import VoxelSetAbstraction
 
 class CenterPointRCNN(Detector3DTemplate):
     def __init__(self, model_cfg, num_class, dataset):
@@ -8,8 +9,10 @@ class CenterPointRCNN(Detector3DTemplate):
 
     def forward(self, batch_dict):
         for cur_module in self.modules_list:
-            batch_dict = cur_module(batch_dict)
-
+            # batch_dict = cur_module(batch_dict)
+            if isinstance(cur_module, VoxelSetAbstraction) and 'spatial_features_stride' not in batch_dict:
+                batch_dict['spatial_features_stride'] = 8  # 2*2*2
+            batch_dict = cur_module(batch_dict)    
         if self.training:
             loss, tb_dict, disp_dict = self.get_training_loss()
 

@@ -15,18 +15,26 @@ class SEAttention(nn.Module):
             nn.Sigmoid()
         )
 
+        for m in self.fc.modules():
+            if isinstance (m, nn.Linear):
+                nn.init.kaiming_normal_(m.weight, mode='fan_out', nonlinearity='relu')
+            
+
+    
     def forward(self, x):
         # Operate the 3-dimensional tensor
         # x: [B, C, N]
         if x.dim() == 3:
             b, c, _ = x.size()
-            y = self.avg_pool(x).view(b, c)
+            y = self.avg_pool(x).view(b, c) + 1e-5
             y = self.fc(y).view(b, c, 1)
+            y = torch.clamp(y, min=0.1, max=2.0) 
             return x * y
         else:
             c = x.size(1)
-            y = x.mean(dim = 0, keepdim = True)
+            y = x.mean(dim = 0, keepdim = True) + 1e-5
             y = self.fc(y)
+            y = torch.clamp(y, min=0.1, max=2.0)
             return x * y
 
 class SESparse3D(nn.Module):
@@ -40,12 +48,17 @@ class SESparse3D(nn.Module):
             nn.Linear(channels // reduction, channels, bias=False),
             nn.Sigmoid()
         )
+        
+        for m in self.fc.modules():
+            if isinstance(m, nn.Linear):
+                nn.init.kaiming_normal_(m.weight, mode='fan_out', nonlinearity='relu')        
 
     def forward(self, x):
         # Operate the sparse tensor
         features = x.features # [N, C]
-        y = features.mean(dim = 0, keepdim = True) # [1, C]
+        y = features.mean(dim = 0, keepdim = True) + 1e-5 # [1, C]
         y = self.fc(y) # [1, C]
+        y = torch.clamp(y, min=0.1, max=2.0)
         new_features = features * y # [N, C]
 
         out = replace_feature(x, new_features)
@@ -62,12 +75,17 @@ class SESparse2D(nn.Module):
             nn.Linear(channels // reduction, channels, bias=False),
             nn.Sigmoid()
         )
+        for m in self.fc.modules():
+            if isinstance(m, nn.Linear):
+                nn.init.kaiming_normal_(m.weight, mode='fan_out', nonlinearity='relu')
+    
 
     def forward(self, x):
         features = x.features
 
-        y = features.mean(dim = 0, keepdim = True)
+        y = features.mean(dim = 0, keepdim = True) + 1e-5
         y = self.fc(y)
+        y = torch.clamp(y, min=0.1, max=2.0)
         new_features = features * y
         out = replace_feature(x, new_features)
 
@@ -83,11 +101,17 @@ class SE2D(nn.Module):
             nn.Linear(channels // reduction, channels, bias=False),
             nn.Sigmoid()
         )
+        for m in self.fc.modules():
+            if isinstance(m, nn.Linear):
+                nn.init.kaiming_normal_(m.weight, mode='fan_out', nonlinearity='relu')
+    
 
     def forward(self, x):
         b, c, _, _ = x.size()
-        y = self.avg_pool(x).view(b, c)
-        y = self.fc(y).view(b, c, 1, 1)
+        y = self.avg_pool(x).view(b, c) + 1e-5
+        y = self.fc(y)
+        y = torch.clamp(y, min=0.1, max=2.0)        
+        y = y.view(b, c, 1, 1)
         return x * y.expand_as(x)
     
            
