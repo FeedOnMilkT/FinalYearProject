@@ -57,7 +57,7 @@ MODEL:
 
     MAP_TO_BEV:
         NAME: PointPillarScatter
-        NUM_BEV_FEATURES: 64
+        NUM_BEV_FEATURES: [64, 128] 
 
     BACKBONE_2D:
         NAME: BaseBEVBackbone
@@ -102,7 +102,7 @@ MODEL:
         LOSS_CONFIG:
             LOSS_WEIGHTS: {
                 'cls_weight': 1.0,
-                'loc_weight': 2.0,
+                'loc_weight': 1.5,
                 'code_weights': [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
             }  
 
@@ -122,7 +122,7 @@ MODEL:
 
 
 OPTIMIZATION:
-    BATCH_SIZE_PER_GPU: 10
+    BATCH_SIZE_PER_GPU: 16
     NUM_EPOCHS: 50
 
     OPTIMIZER: adam_onecycle
@@ -131,13 +131,15 @@ OPTIMIZATION:
     MOMENTUM: 0.9
 
     MOMS: [0.95, 0.85]
-    PCT_START: 0.4
+    PCT_START: 0.3
     DIV_FACTOR: 10
     DECAY_STEP_LIST: [35, 45]
     LR_DECAY: 0.1
     LR_CLIP: 0.0000001
 
-    LR_WARMUP: False
-    WARMUP_EPOCH: 1
+    LR_WARMUP: True
+    WARMUP_EPOCH: 5
 
     GRAD_NORM_CLIP: 10
+
+    USE_AMP: True
