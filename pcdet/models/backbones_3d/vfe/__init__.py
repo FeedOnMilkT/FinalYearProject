@@ -2,6 +2,7 @@ from .mean_vfe import MeanVFE
 from .pillar_vfe import PillarVFE
 from .dynamic_mean_vfe import DynamicMeanVFE
 from .dynamic_pillar_vfe import DynamicPillarVFE, DynamicPillarVFESimple2D, SEDynamicPillarVFE
+from .dynamic_pillar_se_vfe import DeepSEDynamicPillarVFE
 from .dynamic_voxel_vfe import DynamicVoxelVFE
 from .image_vfe import ImageVFE
 from .vfe_template import VFETemplate
@@ -15,5 +16,6 @@ __all__ = {
     'DynPillarVFE': DynamicPillarVFE,
     'DynamicPillarVFESimple2D': DynamicPillarVFESimple2D,
     'DynamicVoxelVFE': DynamicVoxelVFE,
-    'SEDynamicPillarVFE': SEDynamicPillarVFE
+    'SEDynamicPillarVFE': SEDynamicPillarVFE,
+    'DeepSEDynamicPillarVFE': DeepSEDynamicPillarVFE
 }
