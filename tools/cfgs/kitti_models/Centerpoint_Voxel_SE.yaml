@@ -11,8 +11,8 @@ MODEL:
         NAME: MeanVFE
 
     BACKBONE_3D:
-        NAME: SEVoxelResBackBone8x  # 使用我们的SE增强版骨干网络
-        USE_SE_ATTENTION: True       # 启用SE注意力
+        NAME: SEVoxelResBackBone8x  
+        USE_SE_ATTENTION: True       
         SE_REDUCTION: 32    
 
     MAP_TO_BEV:
