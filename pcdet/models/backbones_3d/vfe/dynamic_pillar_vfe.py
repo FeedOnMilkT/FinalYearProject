@@ -10,6 +10,8 @@ except Exception as e:
 
 from .vfe_template import VFETemplate
 from ...model_utils.attention_utils import SEAttention
+from ...model_utils.attention_utils import ECAPFNLayer
+from ...model_utils.attention_utils import CBMAPFNLayer
 
 
 class PFNLayerV2(nn.Module):
@@ -301,3 +303,42 @@ class SEDynamicPillarVFE(DynamicPillarVFE):
         batch_dict['voxel_features'] = batch_dict['pillar_features'] = features
         batch_dict['voxel_coords'] = voxel_coords
         return batch_dict
+
+class ECADynamicPillarVFE(DynamicPillarVFE):
+    def __init__(self, model_cfg, num_point_features, voxel_size, grid_size, point_cloud_range, **kwargs):
+        super().__init__(model_cfg, num_point_features, voxel_size, grid_size, point_cloud_range, **kwargs)
+
+        self.use_eca_attention = self.model_cfg.get('USE_ECA_ATTENTION', True)
+        self.eca_k_size = self.model_cfg.get('ECA_K_SIZE', 3)
+
+        if self.use_eca_attention:
+            self.eca_module = ECAPFNLayer(self.num_filters[-1], self.eca_k_size)
+
+    def forward(self, batch_dict, **kwargs):
+        batch_dict = super().forward(batch_dict, **kwargs)
+
+        if self.use_eca_attention:
+            features = batch_dict['pillar_features']
+            features = self.eca_module(features)
+            batch_dict['pillar_features'] = batch_dict['voxel_features'] = features
+            return batch_dict
+
+class CBAMDynamicPillarVFE(DynamicPillarVFE):
+    def __init__(self, model_cfg, num_point_features, voxel_size, grid_size, point_cloud_range, **kwargs):
+        super().__init__(model_cfg, num_point_features, voxel_size, grid_size, point_cloud_range, **kwargs)
+
+        self.use_cbam_attention = self.model_cfg.get('USE_CBAM_ATTENTION', True)
+        self.cbam_reduction = self.model_cfg.get('CBAM_REDUCTION', 16)
+        self.cbam_k_size = self.model_cfg.get('CBAM_K_SIZE', 7)
+
+        if self.use_cbam_attention:
+            self.cbam_module = CBMAPFNLayer(self.num_filters[-1], self.cbam_reduction, self.cbam_k_size)
+
+    def forward(self, batch_dict, **kwargs):
+        batch_dict = super().forward(batch_dict, **kwargs)
+
+        if self.use_cbam_attention:
+            features = batch_dict['pillar_features']
+            features = self.cbam_module(features)
+            batch_dict['pillar_features'] = batch_dict['voxel_features'] = features
+            return batch_dict
