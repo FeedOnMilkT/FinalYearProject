@@ -12,6 +12,7 @@ The deployment documents were removed as well, but you can find these in **OpenP
 **Attention Modules**:
 
 - Implement `pcdet/models/model_utils/attention_utils.py`: Include the implementations of SENet, ECA-Net, and CBAM-Net, which were re-implemented based on their respective papers and official PyTorch implementations, adapted to support point cloud data structure.
+  
  - Implement `class SEAttention(nn.Module)`:SENet which can be used on both voxel-base models and pillar-base models.
  - Implement `class ECAPFNLayer(nn.Module)`: ECA-Net which can be used on pillar-base models only.
  - Implement `class CBMAPFNLayer(nn.Module)`: CBAM-Net wich can be used on pillar-base models only.
@@ -64,7 +65,8 @@ The following official and reference PyTorch implementations were used as guidan
 - **CBAM (PyTorch Re-implementation)**: https://github.com/luuuyi/CBAM.PyTorch
 - **FPS Calculation Relate Docs**:
  - Python: https://docs.python.org/3/library/time.html
- - Pytoch.cuda: 
+ - Pytoch.cuda:
+   
   - https://pytorch.org/docs/stable/cuda.html
   - https://glaringlee.github.io/cuda.html
 
