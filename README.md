@@ -8,7 +8,9 @@ To better highlight my contribution of my final year project, I have removed the
 The deployment documents were removed as well, but you can find these in **OpenPCDet** repository alternatively: https://github.com/open-mmlab/OpenPCDet.git
 
 ## Core Contribution
+
 **Attention Modules**:
+
 - Implement `pcdet/models/model_utils/attention_utils.py`: Include the implementations of SENet, ECA-Net, and CBAM-Net, which were re-implemented based on their respective papers and official PyTorch implementations, adapted to support point cloud data structure.
  - Implement `class SEAttention(nn.Module)`:SENet which can be used on both voxel-base models and pillar-base models.
  - Implement `class ECAPFNLayer(nn.Module)`: ECA-Net which can be used on pillar-base models only.
@@ -18,6 +20,7 @@ The deployment documents were removed as well, but you can find these in **OpenP
  - Copied from [moskomule/senet.pytorch](https://github.com/moskomule/senet.pytorch) as a reference.
 
 **Backbone Modify**: 
+
 - Modify `pcdet/models/backbones_3d/vfe/dynamic_pillar_vfe.py`:
   - Implement `class SEDynamicPillarVFE(DynamicPillarVFE)`: Extent given VFE implemention and insert the SENet into it.
   - Implement `class ECADynamicPillarVFE(DynamicPillarVFE)`: Extent given VFE implemention and insert the ECA-Net into it.
@@ -32,6 +35,7 @@ The deployment documents were removed as well, but you can find these in **OpenP
   - Implement `class SEPillarRes18BackBone8x(PillarRes18BackBone8x)`: Extent given voxel network and add SENet in multiple layers. But this module isn't used for KITTI models.
   
 **FPS Calculation**:
+
 - Modify `tools/eval_utils/eval_utils.py`:
   - Implement `class InferenceTimeMeter`: Implement inference time calculation module based on Python offical document and CUDA offical document.
   - Modify `def eval_one_epoch(cfg, args, model, dataloader, epoch_id, logger, dist_test=False, result_dir=None):` Add the FPS log printer.
@@ -39,12 +43,23 @@ The deployment documents were removed as well, but you can find these in **OpenP
   - Add parameters for inference time calculation.
 
 **Configuration Files Makeup**:
+
 - Base on KITTI dataset: `tools/cfgs/kitti_models`, Created manually by learning the YAML configuration format due to no suitable reference file was available.
 - Base on nuScenes dataset: `tools/cfgs/nuscenes_models` (Not used in this project), rewritten from the officially provided configuration file.
 
 **Visualisation: `demo.py`**:
+
 - Contribution of this part wasn't used in this project due the dataset changing. I modify this part for nuScenes dataset.
 - Run this part on non-GUI server require extra configuration of the server environment, such as vnc desktop.
+
+## Acknowledge:
+
+The following official and reference PyTorch implementations were used as guidance when re-implementing the attention modules in this project:
+
+- **OpenPCDet**: https://github.com/open-mmlab/OpenPCDet.git
+- **SENet (Official Recommended)**: https://github.com/moskomule/senet.pytorch  
+- **ECA-Net (Official Implementation)**: https://github.com/BangguWu/ECANet  
+- **CBAM (PyTorch Re-implementation)**: https://github.com/luuuyi/CBAM.PyTorch
 
 
 ## License
