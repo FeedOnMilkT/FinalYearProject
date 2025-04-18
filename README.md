@@ -17,7 +17,7 @@ The deployment documents were removed as well, but you can find these in **OpenP
  - Implement `class CBMAPFNLayer(nn.Module)`: CBAM-Net wich can be used on pillar-base models only.
  - Implement `class SESparse3D(nn.Module)`: SENet which was optimised for 3D spares convolution.
  - Implement `class SESparse2D(nn.Module)`: SENet which was optimised for 2D spares convolution, such as pillarnet.
- - Copied from [moskomule/senet.pytorch](https://github.com/moskomule/senet.pytorch) as a reference.
+ - `class SE2D(nn.Module)`: Copied from [moskomule/senet.pytorch](https://github.com/moskomule/senet.pytorch) as a reference.
 
 **Backbone Modify**: 
 
@@ -37,7 +37,7 @@ The deployment documents were removed as well, but you can find these in **OpenP
 **FPS Calculation**:
 
 - Modify `tools/eval_utils/eval_utils.py`:
-  - Implement `class InferenceTimeMeter`: Implement inference time calculation module based on Python offical document and CUDA offical document.
+  - Implement `class InferenceTimeMeter`: Implement inference time calculation module based on Python offical document and Pytorch offical document.
   - Modify `def eval_one_epoch(cfg, args, model, dataloader, epoch_id, logger, dist_test=False, result_dir=None):` Add the FPS log printer.
 - Modify  `tools/test.py`:
   - Add parameters for inference time calculation.
@@ -52,6 +52,8 @@ The deployment documents were removed as well, but you can find these in **OpenP
 - Contribution of this part wasn't used in this project due the dataset changing. I modify this part for nuScenes dataset.
 - Run this part on non-GUI server require extra configuration of the server environment, such as vnc desktop.
 
+**Except for the contributions explicitly listed above, all other modules and code are provided by the official OpenPCDet repository without modification.**
+
 ## Acknowledge:
 
 The following official and reference PyTorch implementations were used as guidance when re-implementing the attention modules in this project:
@@ -60,6 +62,11 @@ The following official and reference PyTorch implementations were used as guidan
 - **SENet (Official Recommended)**: https://github.com/moskomule/senet.pytorch  
 - **ECA-Net (Official Implementation)**: https://github.com/BangguWu/ECANet  
 - **CBAM (PyTorch Re-implementation)**: https://github.com/luuuyi/CBAM.PyTorch
+- **FPS Calculation Relate Docs**:
+ - Python: https://docs.python.org/3/library/time.html
+ - Pytoch.cuda: 
+  - https://pytorch.org/docs/stable/cuda.html
+  - https://glaringlee.github.io/cuda.html
 
 
 ## License
