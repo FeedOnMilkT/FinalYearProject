@@ -53,7 +53,7 @@ The deployment documents were removed as well, but you can find these in **OpenP
 - Contribution of this part wasn't used in this project due the dataset changing. I modify this part for nuScenes dataset.
 - Run this part on non-GUI server require extra configuration of the server environment, such as vnc desktop.
 
-**Except for the contributions explicitly listed above, all other modules and code are provided by the official OpenPCDet repository without modification.**
+## **Except for the contributions explicitly listed above, all other modules and code are provided by the official OpenPCDet repository without modification.**
 
 ## Acknowledge:
 
