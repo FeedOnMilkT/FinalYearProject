@@ -23,17 +23,17 @@ The deployment documents were removed as well, but you can find these in **OpenP
 **Backbone Modify**: 
 
 - Modify `pcdet/models/backbones_3d/vfe/dynamic_pillar_vfe.py`:
-  - Implement `class SEDynamicPillarVFE(DynamicPillarVFE)`: Extent given VFE implemention and insert the SENet into it.
-  - Implement `class ECADynamicPillarVFE(DynamicPillarVFE)`: Extent given VFE implemention and insert the ECA-Net into it.
-  - Implement `class CBAMDynamicPillarVFE(DynamicPillarVFE)`: Extent given VFE implemention and insert the CBAM-Net into it.
+  - Implement `class SEDynamicPillarVFE(DynamicPillarVFE)`: Inherit given VFE implemention and insert the SENet into it.
+  - Implement `class ECADynamicPillarVFE(DynamicPillarVFE)`: Inherit given VFE implemention and insert the ECA-Net into it.
+  - Implement `class CBAMDynamicPillarVFE(DynamicPillarVFE)`: Inherit given VFE implemention and insert the CBAM-Net into it.
 - Modify `pcdet/models/backbones_3d/vfe/dynamic_pillar_se_vfe.py`:
   - Re-implement original `dynamic_pillar_vfe.py` that add SENet in multiple scales.
-  - Implement the density-aware networt base on SE attention principle.
+  - Implement the density-aware network base on SE attention principle.
   - Implement the pillar-size-adjustment network base on SE attention principle.
 - Modify `pcdet/models/backbones_3d/spconv_backbone.py`:
-  - Implement `class SEVoxelResBackBone8x(VoxelResBackBone8x)`: Extent given voxel network and add SENet in multiple layers.
+  - Implement `class SEVoxelResBackBone8x(VoxelResBackBone8x)`: Inherit given voxel network and add SENet in multiple layers.
 - Modify `pcdet/models/backbones_3d/spconv_backbone_2d.py`: (Not used in this project)
-  - Implement `class SEPillarRes18BackBone8x(PillarRes18BackBone8x)`: Extent given voxel network and add SENet in multiple layers. But this module isn't used for KITTI models.
+  - Implement `class SEPillarRes18BackBone8x(PillarRes18BackBone8x)`: Inherit given voxel network and add SENet in multiple layers. But this module isn't used for KITTI models.
   
 **FPS Calculation**:
 
@@ -66,10 +66,8 @@ The following official and reference PyTorch implementations were used as guidan
 - **FPS Calculation Relate Docs**:
  - Python: https://docs.python.org/3/library/time.html
  - Pytoch.cuda:
-   
   - https://pytorch.org/docs/stable/cuda.html
-  - https://glaringlee.github.io/cuda.html
-
+  - https://glaringlee.github.io/cuda.html 
 
 ## License
 
