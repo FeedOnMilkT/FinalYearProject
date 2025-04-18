@@ -8,7 +8,7 @@ This final year project is based on the open-source 3D detection toolbox OpenPCD
 
 My core contributions include the re-implementation and integration of several attention modules (SENet, ECA-Net, and CBAM) adapted specifically for point cloud data, as well as architectural modifications to the backbone network and FPS calculation modules. Unless otherwise noted, all other components were inherited directly from the official OpenPCDet repository without modification.
 
-All reproduced modules and ideas were appropriately re-implemented following their official papers or reference PyTorch implementations. Full acknowledgements and licenses are listed at the end of this document.
+All	reimplement modules and ideas were appropriately re-implemented following their official papers or reference PyTorch implementations. Full acknowledgements and licenses are listed at the end of this document.
 
 This work does not claim originality for the base framework or attention mechanisms, but rather demonstrates their integration and adaptation in the context of point cloud-based 3D object detection.
 
@@ -16,13 +16,13 @@ This work does not claim originality for the base framework or attention mechani
 
 **Attention Modules**:
 
-- Reproduced `pcdet/models/model_utils/attention_utils.py`: Include the re-implementations of SENet, ECA-Net, and CBAM-Net, which were re-implemented based on their respective papers and official PyTorch implementations, adapted to support point cloud data structure.
+- Reimplement `pcdet/models/model_utils/attention_utils.py`: Include the re-implementations of SENet, ECA-Net, and CBAM-Net, which were re-implemented based on their respective papers and official PyTorch implementations, adapted to support point cloud data structure.
   
- - Reproduced `class SEAttention(nn.Module)`:SENet which can be used on both voxel-base models and pillar-base models.
- - Reproduced `class ECAPFNLayer(nn.Module)`: ECA-Net which can be used on pillar-base models only.
- - Reproduced `class CBMAPFNLayer(nn.Module)`: CBAM-Net wich can be used on pillar-base models only.
- - Reproduced `class SESparse3D(nn.Module)`: SENet which was optimised for 3D spares convolution.
- - Reproduced `class SESparse2D(nn.Module)`: SENet which was optimised for 2D spares convolution, such as pillarnet. (Not used)
+ - Reimplement `class SEAttention(nn.Module)`:SENet which can be used on both voxel-base models and pillar-base models.
+ - Reimplement `class ECAPFNLayer(nn.Module)`: ECA-Net which can be used on pillar-base models only.
+ - Reimplement `class CBMAPFNLayer(nn.Module)`: CBAM-Net wich can be used on pillar-base models only.
+ - Reimplement `class SESparse3D(nn.Module)`: SENet which was optimised for 3D spares convolution.
+ - Reimplement `class SESparse2D(nn.Module)`: SENet which was optimised for 2D spares convolution, such as pillarnet. (Not used)
  - `class SE2D(nn.Module)`: Copied from [moskomule/senet.pytorch](https://github.com/moskomule/senet.pytorch) as a reference.
 
 **Backbone Modify**: 
