@@ -4,36 +4,41 @@
 
 ## Introduction:
 
-To better highlight my contribution of my final year project, I have removed the a part of code in **OpenPCDet** which is unrelate to this project. Only the components directly relevant to this work have been retained
-The deployment documents were removed as well, but you can find these in **OpenPCDet** repository alternatively: https://github.com/open-mmlab/OpenPCDet.git
+This final year project is based on the open-source 3D detection toolbox OpenPCDet. To focus on the core contributions of my work, I have removed unrelated components which are provided by OpenPCDet. The deployment documents were removed as well, but you can find these in **OpenPCDet** repository alternatively: https://github.com/open-mmlab/OpenPCDet.git.
+
+My core contributions include the re-implementation and integration of several attention modules (SENet, ECA-Net, and CBAM) adapted specifically for point cloud data, as well as architectural modifications to the backbone network and FPS calculation modules. Unless otherwise noted, all other components were inherited directly from the official OpenPCDet repository without modification.
+
+All reproduced modules and ideas were appropriately re-implemented following their official papers or reference PyTorch implementations. Full acknowledgements and licenses are listed at the end of this document.
+
+This work does not claim originality for the base framework or attention mechanisms, but rather demonstrates their integration and adaptation in the context of point cloud-based 3D object detection.
 
 ## Core Contribution
 
 **Attention Modules**:
 
-- Implement `pcdet/models/model_utils/attention_utils.py`: Include the implementations of SENet, ECA-Net, and CBAM-Net, which were re-implemented based on their respective papers and official PyTorch implementations, adapted to support point cloud data structure.
+- Reproduced `pcdet/models/model_utils/attention_utils.py`: Include the re-implementations of SENet, ECA-Net, and CBAM-Net, which were re-implemented based on their respective papers and official PyTorch implementations, adapted to support point cloud data structure.
   
- - Implement `class SEAttention(nn.Module)`:SENet which can be used on both voxel-base models and pillar-base models.
- - Implement `class ECAPFNLayer(nn.Module)`: ECA-Net which can be used on pillar-base models only.
- - Implement `class CBMAPFNLayer(nn.Module)`: CBAM-Net wich can be used on pillar-base models only.
- - Implement `class SESparse3D(nn.Module)`: SENet which was optimised for 3D spares convolution.
- - Implement `class SESparse2D(nn.Module)`: SENet which was optimised for 2D spares convolution, such as pillarnet. (Not used)
+ - Reproduced `class SEAttention(nn.Module)`:SENet which can be used on both voxel-base models and pillar-base models.
+ - Reproduced `class ECAPFNLayer(nn.Module)`: ECA-Net which can be used on pillar-base models only.
+ - Reproduced `class CBMAPFNLayer(nn.Module)`: CBAM-Net wich can be used on pillar-base models only.
+ - Reproduced `class SESparse3D(nn.Module)`: SENet which was optimised for 3D spares convolution.
+ - Reproduced `class SESparse2D(nn.Module)`: SENet which was optimised for 2D spares convolution, such as pillarnet. (Not used)
  - `class SE2D(nn.Module)`: Copied from [moskomule/senet.pytorch](https://github.com/moskomule/senet.pytorch) as a reference.
 
 **Backbone Modify**: 
 
 - Modify `pcdet/models/backbones_3d/vfe/dynamic_pillar_vfe.py`:
-  - Implement `class SEDynamicPillarVFE(DynamicPillarVFE)`: Inherit given VFE implemention and insert the SENet into it.
-  - Implement `class ECADynamicPillarVFE(DynamicPillarVFE)`: Inherit given VFE implemention and insert the ECA-Net into it.
-  - Implement `class CBAMDynamicPillarVFE(DynamicPillarVFE)`: Inherit given VFE implemention and insert the CBAM-Net into it.
+  - Added `class SEDynamicPillarVFE(DynamicPillarVFE)`: Extend given VFE implemention and insert the SENet into it.
+  - Added `class ECADynamicPillarVFE(DynamicPillarVFE)`: Extend given VFE implemention and insert the ECA-Net into it.
+  - Added `class CBAMDynamicPillarVFE(DynamicPillarVFE)`: Extend given VFE implemention and insert the CBAM-Net into it.
 - Modify `pcdet/models/backbones_3d/vfe/dynamic_pillar_se_vfe.py`:
   - Re-implement original `dynamic_pillar_vfe.py` that add SENet in multiple scales.
   - Implement the density-aware network base on SE attention principle.
   - Implement the pillar-size-adjustment network base on SE attention principle.
 - Modify `pcdet/models/backbones_3d/spconv_backbone.py`:
-  - Implement `class SEVoxelResBackBone8x(VoxelResBackBone8x)`: Inherit given voxel network and add SENet in multiple layers.
+  - Added `class SEVoxelResBackBone8x(VoxelResBackBone8x)`: Extend given voxel network and add SENet in multiple layers.
 - Modify `pcdet/models/backbones_3d/spconv_backbone_2d.py`: (Not used in this project)
-  - Implement `class SEPillarRes18BackBone8x(PillarRes18BackBone8x)`: Inherit given voxel network and add SENet in multiple layers. But this module isn't used for KITTI models.
+  - Added `class SEPillarRes18BackBone8x(PillarRes18BackBone8x)`: Extend given voxel network and add SENet in multiple layers. But this module isn't used for KITTI models.
   
 **FPS Calculation**:
 
