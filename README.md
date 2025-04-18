@@ -17,7 +17,7 @@ The deployment documents were removed as well, but you can find these in **OpenP
  - Implement `class ECAPFNLayer(nn.Module)`: ECA-Net which can be used on pillar-base models only.
  - Implement `class CBMAPFNLayer(nn.Module)`: CBAM-Net wich can be used on pillar-base models only.
  - Implement `class SESparse3D(nn.Module)`: SENet which was optimised for 3D spares convolution.
- - Implement `class SESparse2D(nn.Module)`: SENet which was optimised for 2D spares convolution, such as pillarnet.
+ - Implement `class SESparse2D(nn.Module)`: SENet which was optimised for 2D spares convolution, such as pillarnet. (Not used)
  - `class SE2D(nn.Module)`: Copied from [moskomule/senet.pytorch](https://github.com/moskomule/senet.pytorch) as a reference.
 
 **Backbone Modify**: 
