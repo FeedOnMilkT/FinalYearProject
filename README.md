@@ -1,144 +1,82 @@
 
 
-# Final Year Project Based on OpenPCDet: Enhanced 3D Object Detection Framework
+# Final Year Project Based on OpenPCDet Toolbox
 
 ## Introduction:
 
-This research project extends OpenPCDet to advance the state-of-the-art in 3D object detection. Our work focuses on enhancing detection performance through architectural innovations while maintaining real-world applicability.
+This final year project is based on the open-source 3D detection toolbox OpenPCDet. To focus on the core contributions of my work, I have removed unrelated components which are provided by OpenPCDet, such as implemention of other detection alogorthim, remaining code still works fine. The deployment documents were removed as well, but you can find these in **OpenPCDet** repository alternatively: https://github.com/open-mmlab/OpenPCDet.git.
 
-The primary objectives include optimizing existing 3D backbone networks and exploring novel architectures to improve detection accuracy and efficiency. We are investigating potential improvements to the core detection pipeline through sophisticated backbone network modifications and innovative feature extraction approaches.
+My core contributions include the re-implementation and integration of several attention modules (SENet, ECA-Net, and CBAM) adapted specifically for point cloud data, as well as architectural modifications to the backbone network and FPS calculation modules. Unless otherwise noted, all other components were inherited directly from the official OpenPCDet repository without modification.
 
-For enhanced real-world performance, we are exploring multi-modal fusion techniques to leverage complementary sensor data, potentially improving detection accuracy in challenging scenarios. Additionally, we are developing optimization strategies specifically targeted at edge computing platforms like NVIDIA Jetson devices, ensuring robust real-time performance even with limited computational resources.
+All	reimplement modules and ideas were appropriately re-implemented following their official papers or reference PyTorch implementations. Full acknowledgements and licenses are listed at the end of this document.
 
-This project aims to bridge the gap between state-of-the-art detection performance and practical deployment requirements, making advanced 3D object detection more accessible for real-world applications.
+This work does not claim originality for the base framework or attention mechanisms, but rather demonstrates their integration and adaptation in the context of point cloud-based 3D object detection.
 
-Built upon OpenPCDet
+## Core Contribution
 
-`OpenPCDet` is a clear, simple, self-contained open source project for LiDAR-based 3D object detection. 
+**Attention Modules**:
 
-It is also the official code release of [`[PointRCNN]`](https://arxiv.org/abs/1812.04244), [`[Part-A2-Net]`](https://arxiv.org/abs/1907.03670), [`[PV-RCNN]`](https://arxiv.org/abs/1912.13192), [`[Voxel R-CNN]`](https://arxiv.org/abs/2012.15712), [`[PV-RCNN++]`](https://arxiv.org/abs/2102.00463) and [`[MPPNet]`](https://arxiv.org/abs/2205.05979). 
+- Add `pcdet/models/model_utils/attention_utils.py`: Include the customise implementations of SENet, ECA-Net, and CBAM-Net, which were implemented based on their respective papers and official PyTorch implementations, adapted to support point cloud data structure.
+  
+ - `class SEAttention(nn.Module)`:A custom implementation of SENet which can be used on both voxel-base models and pillar-base models.
+ - `class ECAPFNLayer(nn.Module)`:A custom implementation of ECA-Net which can be used on pillar-base models only.
+ - `class CBMAPFNLayer(nn.Module)`: A custom implementation of CBAM-Net which can be used on pillar-base models only.
+ - `class SESparse3D(nn.Module)`: A custom implementation of SENet which was optimised for 3D spares convolution.
+ - `class SESparse2D(nn.Module)`: A custom implementation of SENet which was optimised for 2D spares convolution, such as pillarnet. (Not used)
+ - `class SE2D(nn.Module)`: Copied from [moskomule/senet.pytorch](https://github.com/moskomule/senet.pytorch) as a reference. (Not used in the final implementation)
 
-**Highlights**: 
-* `OpenPCDet` has been updated to `v0.6.0` (Sep. 2022).
-* The codes of PV-RCNN++ has been supported.
-* The codes of MPPNet has been supported. 
-* The multi-modal 3D detection approaches on Nuscenes have been supported. 
+**Backbone Modify**: 
 
-## Overview
-- [Design Pattern](#openpcdet-design-pattern)
-- [Model Zoo](#model-zoo)
-- [Installation](docs/INSTALL.md)
-- [Quick Demo](docs/DEMO.md)
-- [Getting Started](docs/GETTING_STARTED.md)
-- [Citation](#citation)
+- Modify `pcdet/models/backbones_3d/vfe/dynamic_pillar_vfe.py`:
+  - Added `class SEDynamicPillarVFE(DynamicPillarVFE)`: Extend given VFE implemention and insert the SENet into it.
+  - Added `class ECADynamicPillarVFE(DynamicPillarVFE)`: Extend given VFE implemention and insert the ECA-Net into it.
+  - Added `class CBAMDynamicPillarVFE(DynamicPillarVFE)`: Extend given VFE implemention and insert the CBAM-Net into it.
+- Modify `pcdet/models/backbones_3d/vfe/dynamic_pillar_se_vfe.py`:
+  - Re-implement original `dynamic_pillar_vfe.py` that add SENet in multiple scales.
+  - Implement the density-aware network base on SE attention principle.
+  - Implement the pillar-size-adjustment network base on SE attention principle.
+- Modify `pcdet/models/backbones_3d/spconv_backbone.py`:
+  - Added `class SEVoxelResBackBone8x(VoxelResBackBone8x)`: Extend given voxel network and add SENet in multiple layers.
+- Modify `pcdet/models/backbones_3d/spconv_backbone_2d.py`: (Not used in this project)
+  - Added `class SEPillarRes18BackBone8x(PillarRes18BackBone8x)`: Extend given voxel network and add SENet in multiple layers. But this module isn't used for KITTI models.
+  
+**FPS Calculation**:
 
+- Modify `tools/eval_utils/eval_utils.py`:
+  - Implement `class InferenceTimeMeter`: Implement inference time calculation module based on Python offical document and Pytorch offical document.
+  - Modify `def eval_one_epoch(cfg, args, model, dataloader, epoch_id, logger, dist_test=False, result_dir=None):` Add the FPS log printer.
+- Modify  `tools/test.py`:
+  - Add parameters for inference time calculation.
 
+**Configuration Files Makeup**:
 
+- Base on KITTI dataset: `tools/cfgs/kitti_models`, Created manually by learning the YAML configuration format due to no suitable reference file was available.
+- Base on nuScenes dataset: `tools/cfgs/nuscenes_models` (Not used in this project), rewritten from the officially provided configuration file.
 
-## Introduction
+**Visualisation: `demo.py`**:
 
+- Contribution of this part wasn't used in this project due the dataset changing. I modify this part for nuScenes dataset.
+- Run this part on non-GUI server require extra configuration of the server environment, such as vnc desktop.
 
-### What does `OpenPCDet` toolbox do?
+## **Except for the contributions explicitly listed above, all other modules and code are provided by the official OpenPCDet repository without modification.**
 
-Note that we have upgrated `PCDet` from `v0.1` to `v0.2` with pretty new structures to support various datasets and models.
+## Acknowledge:
 
-`OpenPCDet` is a general PyTorch-based codebase for 3D object detection from point cloud. 
-It currently supports multiple state-of-the-art 3D object detection methods with highly refactored codes for both one-stage and two-stage 3D detection frameworks.
+The following official and reference PyTorch implementations were used as guidance when re-implementing the attention modules in this project:
 
-Based on `OpenPCDet` toolbox, we win the Waymo Open Dataset challenge in [3D Detection](https://waymo.com/open/challenges/3d-detection/), 
-[3D Tracking](https://waymo.com/open/challenges/3d-tracking/), [Domain Adaptation](https://waymo.com/open/challenges/domain-adaptation/) 
-three tracks among all LiDAR-only methods, and the Waymo related models will be released to `OpenPCDet` soon.    
-
-We are actively updating this repo currently, and more datasets and models will be supported soon. 
-Contributions are also welcomed. 
-
-### `OpenPCDet` design pattern
-
-* Data-Model separation with unified point cloud coordinate for easily extending to custom datasets:
-<p align="center">
-  <img src="docs/dataset_vs_model.png" width="95%" height="320">
-</p>
-
-* Unified 3D box definition: (x, y, z, dx, dy, dz, heading).
-
-* Flexible and clear model structure to easily support various 3D detection models: 
-<p align="center">
-  <img src="docs/model_framework.png" width="95%">
-</p>
-
-* Support various models within one framework as: 
-<p align="center">
-  <img src="docs/multiple_models_demo.png" width="95%">
-</p>
-
-
-
-## Model Zoo
-
-### KITTI 3D Object Detection Baselines
-Selected supported methods are shown in the below table. The results are the 3D detection performance of moderate difficulty on the *val* set of KITTI dataset.
-* All LiDAR-based models are trained with 8 GTX 1080Ti GPUs and are available for download. 
-* The training time is measured with 8 TITAN XP GPUs and PyTorch 1.5.
-
-|                                             | training time | Car@R11 | Pedestrian@R11 | Cyclist@R11  | download | 
-|---------------------------------------------|----------:|:-------:|:-------:|:-------:|:---------:|
-| [PointPillar](tools/cfgs/kitti_models/pointpillar.yaml) |~1.2 hours| 77.28 | 52.29 | 62.68 | [model-18M](https://drive.google.com/file/d/1wMxWTpU1qUoY3DsCH31WJmvJxcjFXKlm/view?usp=sharing) | 
-| [SECOND](tools/cfgs/kitti_models/second.yaml)       |  ~1.7 hours  | 78.62 | 52.98 | 67.15 | [model-20M](https://drive.google.com/file/d/1-01zsPOsqanZQqIIyy7FpNXStL3y4jdR/view?usp=sharing) |
-| [SECOND-IoU](tools/cfgs/kitti_models/second_iou.yaml)       | -  | 79.09 | 55.74 | 71.31 | [model-46M](https://drive.google.com/file/d/1AQkeNs4bxhvhDQ-5sEo_yvQUlfo73lsW/view?usp=sharing) |
-| [PointRCNN](tools/cfgs/kitti_models/pointrcnn.yaml) | ~3 hours | 78.70 | 54.41 | 72.11 | [model-16M](https://drive.google.com/file/d/1BCX9wMn-GYAfSOPpyxf6Iv6fc0qKLSiU/view?usp=sharing)| 
-| [PointRCNN-IoU](tools/cfgs/kitti_models/pointrcnn_iou.yaml) | ~3 hours | 78.75 | 58.32 | 71.34 | [model-16M](https://drive.google.com/file/d/1V0vNZ3lAHpEEt0MlT80eL2f41K2tHm_D/view?usp=sharing)|
-| [Part-A2-Free](tools/cfgs/kitti_models/PartA2_free.yaml)   | ~3.8 hours| 78.72 | 65.99 | 74.29 | [model-226M](https://drive.google.com/file/d/1lcUUxF8mJgZ_e-tZhP1XNQtTBuC-R0zr/view?usp=sharing) |
-| [Part-A2-Anchor](tools/cfgs/kitti_models/PartA2.yaml)    | ~4.3 hours| 79.40 | 60.05 | 69.90 | [model-244M](https://drive.google.com/file/d/10GK1aCkLqxGNeX3lVu8cLZyE0G8002hY/view?usp=sharing) |
-| [PV-RCNN](tools/cfgs/kitti_models/pv_rcnn.yaml) | ~5 hours| 83.61 | 57.90 | 70.47 | [model-50M](https://drive.google.com/file/d/1lIOq4Hxr0W3qsX83ilQv0nk1Cls6KAr-/view?usp=sharing) |
-| [Voxel R-CNN (Car)](tools/cfgs/kitti_models/voxel_rcnn_car.yaml) | ~2.2 hours| 84.54 | - | - | [model-28M](https://drive.google.com/file/d/19_jiAeGLz7V0wNjSJw4cKmMjdm5EW5By/view?usp=sharing) |
-| [Focals Conv - F](tools/cfgs/kitti_models/voxel_rcnn_car_focal_multimodal.yaml) | ~4 hours| 85.66 | - | - | [model-30M](https://drive.google.com/file/d/1u2Vcg7gZPOI-EqrHy7_6fqaibvRt2IjQ/view?usp=sharing) |
-||
-| [CaDDN (Mono)](tools/cfgs/kitti_models/CaDDN.yaml) |~15 hours| 21.38 | 13.02 | 9.76 | [model-774M](https://drive.google.com/file/d/1OQTO2PtXT8GGr35W9m2GZGuqgb6fyU1V/view?usp=sharing) |
-
-
-### NuScenes 3D Object Detection Baselines
-All models are trained with 8 GPUs and are available for download. For training BEVFusion, please refer to the [guideline](docs/guidelines_of_approaches/bevfusion.md).
-
-|                                                                                                    |   mATE |  mASE  |  mAOE  | mAVE  | mAAE  |  mAP  |  NDS   |                                              download                                              | 
-|----------------------------------------------------------------------------------------------------|-------:|:------:|:------:|:-----:|:-----:|:-----:|:------:|:--------------------------------------------------------------------------------------------------:|
-| [PointPillar-MultiHead](tools/cfgs/nuscenes_models/cbgs_pp_multihead.yaml)                         | 33.87	 | 26.00  | 32.07	 | 28.74 | 20.15 | 44.63 | 58.23	 |  [model-23M](https://drive.google.com/file/d/1p-501mTWsq0G9RzroTWSXreIMyTUUpBM/view?usp=sharing)   | 
-| [SECOND-MultiHead (CBGS)](tools/cfgs/nuscenes_models/cbgs_second_multihead.yaml)                   |  31.15 | 	25.51 | 	26.64 | 26.26 | 20.46 | 50.59 | 62.29  |  [model-35M](https://drive.google.com/file/d/1bNzcOnE3u9iooBFMk2xK7HqhdeQ_nwTq/view?usp=sharing)   |
-| [CenterPoint-PointPillar](tools/cfgs/nuscenes_models/cbgs_dyn_pp_centerpoint.yaml)                 |  31.13 | 	26.04 | 	42.92 | 23.90 | 19.14 | 50.03 | 60.70  |  [model-23M](https://drive.google.com/file/d/1UvGm6mROMyJzeSRu7OD1leU_YWoAZG7v/view?usp=sharing)   |
-| [CenterPoint (voxel_size=0.1)](tools/cfgs/nuscenes_models/cbgs_voxel01_res3d_centerpoint.yaml)     |  30.11 | 	25.55 | 	38.28 | 21.94 | 18.87 | 56.03 | 64.54  |  [model-34M](https://drive.google.com/file/d/1Cz-J1c3dw7JAWc25KRG1XQj8yCaOlexQ/view?usp=sharing)   |
-| [CenterPoint (voxel_size=0.075)](tools/cfgs/nuscenes_models/cbgs_voxel0075_res3d_centerpoint.yaml) |  28.80 | 	25.43 | 	37.27 | 21.55 | 18.24 | 59.22 | 66.48  |  [model-34M](https://drive.google.com/file/d/1XOHAWm1MPkCKr1gqmc3TWi5AYZgPsgxU/view?usp=sharing)   |
-| [VoxelNeXt (voxel_size=0.075)](tools/cfgs/nuscenes_models/cbgs_voxel0075_voxelnext.yaml)   |  30.11 | 	25.23 | 	40.57 | 21.69 | 18.56 | 60.53 | 66.65  | [model-31M](https://drive.google.com/file/d/1IV7e7G9X-61KXSjMGtQo579pzDNbhwvf/view?usp=share_link) |
-| [TransFusion-L*](tools/cfgs/nuscenes_models/transfusion_lidar.yaml)   |  27.96 | 	25.37 | 	29.35 | 27.31 | 18.55 | 64.58 | 69.43  | [model-32M](https://drive.google.com/file/d/1cuZ2qdDnxSwTCsiXWwbqCGF-uoazTXbz/view?usp=share_link) |
-| [BEVFusion](tools/cfgs/nuscenes_models/bevfusion.yaml)   |  28.03 | 	25.43 | 	30.19 | 26.76 | 18.48 | 67.75 | 70.98  | [model-157M](https://drive.google.com/file/d/1X50b-8immqlqD8VPAUkSKI0Ls-4k37g9/view?usp=share_link) |
-
-*: Use the fade strategy, which disables data augmentations in the last several epochs during training.
-
- 
-
-## Installation
-
-Please refer to [INSTALL.md](docs/INSTALL.md) for the installation of `OpenPCDet`.
-
-
-## Quick Demo
-Please refer to [DEMO.md](docs/DEMO.md) for a quick demo to test with a pretrained model and 
-visualize the predicted results on your custom data or the original KITTI data.
-
-## Getting Started
-
-Please refer to [GETTING_STARTED.md](docs/GETTING_STARTED.md) to learn more usage about this project.
-
+- **OpenPCDet**: https://github.com/open-mmlab/OpenPCDet.git
+- **SENet (Official Recommended)**: https://github.com/moskomule/senet.pytorch  
+- **ECA-Net (Official Implementation)**: https://github.com/BangguWu/ECANet  
+- **CBAM (PyTorch Re-implementation)**: https://github.com/luuuyi/CBAM.PyTorch
+- **FPS Calculation Relate Docs**:
+ - Python: https://docs.python.org/3/library/time.html
+ - Pytoch.cuda:
+  - https://pytorch.org/docs/stable/cuda.html
+  - https://glaringlee.github.io/cuda.html 
 
 ## License
 
 `OpenPCDet` is released under the [Apache 2.0 license](LICENSE).
-
-## Acknowledgement
-`OpenPCDet` is an open source project for LiDAR-based 3D scene perception that supports multiple
-LiDAR-based perception models as shown above. Some parts of `PCDet` are learned from the official released codes of the above supported methods. 
-We would like to thank for their proposed methods and the official implementation.   
-
-We hope that this repo could serve as a strong and flexible codebase to benefit the research community by speeding up the process of reimplementing previous works and/or developing new methods.
-
 
 ## Citation 
 If you find this project useful in your research, please consider cite:
@@ -153,7 +91,6 @@ If you find this project useful in your research, please consider cite:
 }
 ```
 
-## Contribution
-Welcome to be a member of the OpenPCDet development team by contributing to this repo, and feel free to contact us for any potential contributions. 
+
 
 
