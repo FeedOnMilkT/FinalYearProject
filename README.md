@@ -19,11 +19,7 @@ The following official and reference PyTorch implementations were used as guidan
 - **SENet (Official Recommended)**: https://github.com/moskomule/senet.pytorch  
 - **ECA-Net (Official Implementation)**: https://github.com/BangguWu/ECANet  
 - **CBAM (PyTorch Re-implementation)**: https://github.com/luuuyi/CBAM.PyTorch
-- **FPS Calculation Relate Docs**:
- - Python: https://docs.python.org/3/library/time.html
- - Pytoch.cuda:
-  - https://pytorch.org/docs/stable/cuda.html
-  - https://glaringlee.github.io/cuda.html 
+
 
 ## License
 
